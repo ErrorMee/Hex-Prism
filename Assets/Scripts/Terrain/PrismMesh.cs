@@ -124,6 +124,7 @@ public class PrismMesh : MonoBehaviour
 		
 		mesh.uv = uvs;
 		mesh.normals = normals;
+
 	}
 
 	private void UpdateTriangles()

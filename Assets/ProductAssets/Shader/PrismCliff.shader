@@ -7,7 +7,9 @@
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
 
-        _UnitHeight("UnitHeight", Range(0,1)) = 0.3
+        _UnitHeight("UnitHeight", Range(0,4)) = 1
+
+        _BGColor("BGColor", Color) = (1,1,1,1)
 
         _HeightColor0("HeightColor0", Color) = (1,1,1,1)
         _HeightColor1("HeightColor1", Color) = (1,1,1,1)
@@ -44,6 +46,8 @@
         fixed4 _Color;
         half _UnitHeight;
 
+        fixed4 _BGColor;
+
         fixed4 _HeightColor0;
         fixed4 _HeightColor1;
         fixed4 _HeightColor2;
@@ -60,29 +64,35 @@
             // put more per-instance properties here
         UNITY_INSTANCING_BUFFER_END(Props)
 
-        float random(float seed) {
-            return frac(sin(dot(float2(seed, 0.5), float2(12.9898, 78.233))) * 43758.5453123);
-        }
-
         fixed4 GetAlbedoColor(Input IN)
         {
-            float height = IN.worldPos.y + sin(IN.uv_MainTex.x * 3.1415926 * 2 * 16) * _UnitHeight / 16;
+            float height = IN.worldPos.y +
+                sin(length(IN.worldPos - half3(100, 1000, 100)) * 8) * _UnitHeight / 16 +
+                (IN.worldPos.x + IN.worldPos.z);
             
-            height = step(0, height) * height;
-            int level = ceil(height / _UnitHeight);
-
-            level = (1- step(1, level)) + level;
-            level = (1 - step(9, level)) * level + step(9, level) * 8;
+            int level = ceil(height / _UnitHeight);//-2 -1 0 1 2
+            level = abs(level);//2 1 0 1 2
+            level = level % 8;
             //step(a,b) if a>b return 0
             //return tex2D(_MainTex, IN.uv_MainTex);
-            return step(1, level) * step(level, 1) * _HeightColor0
-                + step(2, level) * step(level, 2) * _HeightColor1
-                + step(3, level) * step(level, 3) * _HeightColor2
-                + step(4, level) * step(level, 4) * _HeightColor3
-                + step(5, level) * step(level, 5) * _HeightColor4
-                + step(6, level) * step(level, 6) * _HeightColor5
-                + step(7, level) * step(level, 7) * _HeightColor6
-                + step(8, level) * step(level, 8) * _HeightColor7;
+
+            fixed4 intColor = 
+                step(0, level) * step(level, 0) * _HeightColor0
+                + step(1, level) * step(level, 1) * _HeightColor1
+                + step(2, level) * step(level, 2) * _HeightColor2
+                + step(3, level) * step(level, 3) * _HeightColor3
+                + step(4, level) * step(level, 4) * _HeightColor4
+                + step(5, level) * step(level, 5) * _HeightColor5
+                + step(6, level) * step(level, 6) * _HeightColor6
+                + step(7, level) * step(level, 7) * _HeightColor7;
+
+            //1 0 1
+            float frac101 = abs(abs(frac(height / _UnitHeight)) - 0.5) * 2;
+            float fadeRang = 0.8;
+            float frac101P = clamp(frac101 - (1 - fadeRang), 0, 1);
+            float fade = frac101P / fadeRang;
+
+            return lerp(intColor, _BGColor, fade);
         }
 
         void surf (Input IN, inout SurfaceOutputStandard o)
