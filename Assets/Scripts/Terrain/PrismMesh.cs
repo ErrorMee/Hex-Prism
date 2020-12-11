@@ -94,7 +94,7 @@ public class PrismMesh : MonoBehaviour
 
 			uvs[index1] = new Vector2(e / (float)m_Edges * uScale, 0);
 			uvs[index3] = new Vector2(e / (float)m_Edges * uScale, 1);
-			uvs[index4] = uvs[index5] = new Vector2(cos, sin) * TerrainConst.Prism_Radius + Vector2.one * TerrainConst.Prism_Radius;
+			uvs[index4] = uvs[index5] = new Vector2(cos, sin) * 0.5f + Vector2.one * 0.5f;
 			uvs[index6] = uvs[index7] = uvs[index8] = uvs[index4] - new Vector2(cos, sin) * TerrainConst.Prism_Radius * m_CoverHeight;
 		}
 
@@ -118,7 +118,7 @@ public class PrismMesh : MonoBehaviour
 
 		vertices[vertices.Length - 1] = Vector3.up * (cliffHeight + TerrainConst.Prism_Radius * m_CoverHeight);
 		normals[vertices.Length - 1] = Vector3.up;
-		uvs[vertices.Length - 1] = Vector2.one * TerrainConst.Prism_Radius;
+		uvs[vertices.Length - 1] = Vector2.one * 0.5f;
 
 		mesh.vertices = vertices;
 		

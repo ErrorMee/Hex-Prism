@@ -47,11 +47,19 @@
                 // put more per-instance properties here
             UNITY_INSTANCING_BUFFER_END(Props)
 
+
+            fixed4 GetCoverColor(Input IN)
+            {
+                //fixed uvl = tex2D(_MainTex, IN.uv_MainTex.xy);
+                //fixed4 coverColor = fixed4(uvl, uvl, uvl, 1.0);
+                fixed4 coverColor = tex2D(_MainTex, IN.uv_MainTex.xy);
+                return coverColor;
+            }
             
             void surf(Input IN, inout SurfaceOutputStandard o)
             {
                 // Albedo comes from a texture tinted by color
-                fixed4 c = GetColorful(IN);
+                fixed4 c = GetCoverColor(IN);
                 o.Albedo = c.rgb;
                 // Metallic and smoothness come from slider variables
                 o.Metallic = _Metallic;
