@@ -15,11 +15,11 @@ public class PrismMesh : MonoBehaviour
 
 	[SerializeField]
 	[Range(0, 16)]
-	private float m_Height = 1f;
+	private float m_HeightLevel = 1f;
 
 	[SerializeField]
 	[Range(0, 1)]
-	private float m_Rise = 0.2f;
+	private float m_CoverHeight = 0.2f;
 
 	private Mesh mesh;
 
@@ -54,6 +54,8 @@ public class PrismMesh : MonoBehaviour
 		Vector3[] normals = new Vector3[vertices.Length];
 		Vector2[] uvs = new Vector2[vertices.Length];
 
+		float cliffHeight = m_HeightLevel * TerrainConst.Prism_UnitHeight;
+
 		float angleE = Mathf.PI * 2 / m_Edges;
 
 		for (int e = 0; e < m_Edges; e++)
@@ -71,32 +73,32 @@ public class PrismMesh : MonoBehaviour
 			
 			//vertices
 			vertices[index0] = 
-			vertices[index1] = new Vector3(cos * 0.5f, 0, sin * 0.5f);
+			vertices[index1] = new Vector3(cos, 0, sin) * TerrainConst.Prism_Radius;
 			vertices[index2] = vertices[index3] =
-			vertices[index4] = vertices[index5] = new Vector3(cos * 0.5f, m_Height, sin * 0.5f);
-			vertices[index6] = vertices[index7] = vertices[index8] = 
-				new Vector3(cos * 0.5f * (1 - m_Rise), m_Height + 0.5f * m_Rise, sin * 0.5f * (1 - m_Rise));
+			vertices[index4] = vertices[index5] = vertices[index0] + Vector3.up * cliffHeight;
+			vertices[index6] = vertices[index7] = vertices[index8] =
+				vertices[index2] - vertices[index0] * m_CoverHeight + Vector3.up * TerrainConst.Prism_Radius * m_CoverHeight;
 
 			//uvs
+			float uScale = 1;// (vertices[2] - vertices[1]).magnitude * m_Edges / cliffHeight;
 			if (e == 0)
 			{
-				uvs[index0] = new Vector2(1, 0);
-				uvs[index2] = uvs[index4] = new Vector2(1, 1);
+				uvs[index0] = new Vector2(1 * uScale, 0);
+				uvs[index2] = uvs[index4] = new Vector2(1 * uScale, 1);
 			}
 			else
 			{
-				float uScale = (vertices[2] - vertices[1]).magnitude * m_Edges / m_Height;
 				uvs[index0] = new Vector2(e / (float)m_Edges * uScale, 0);
 				uvs[index2] = uvs[index4] = new Vector2(e / (float)m_Edges * uScale, 1);
 			}
 
-			uvs[index1] = new Vector2(e / (float)m_Edges, 0);
-			uvs[index3] = new Vector2(e / (float)m_Edges, 1);
-
-			uvs[index4] = uvs[index5] = new Vector2(cos, sin) * 0.5f + Vector2.one * 0.5f;
-			uvs[index6] = uvs[index7] = uvs[index8] = uvs[index4] - new Vector2(cos, sin) * 0.5f * m_Rise;
+			uvs[index1] = new Vector2(e / (float)m_Edges * uScale, 0);
+			uvs[index3] = new Vector2(e / (float)m_Edges * uScale, 1);
+			uvs[index4] = uvs[index5] = new Vector2(cos, sin) * TerrainConst.Prism_Radius + Vector2.one * TerrainConst.Prism_Radius;
+			uvs[index6] = uvs[index7] = uvs[index8] = uvs[index4] - new Vector2(cos, sin) * TerrainConst.Prism_Radius * m_CoverHeight;
 		}
 
+		//normals
 		for (int e = 0; e < m_Edges; e++)
 		{
 			int index0 = (e + m_Edges * 0) * 2; int index1 = index0 + 1;
@@ -104,88 +106,89 @@ public class PrismMesh : MonoBehaviour
 			int index4 = (e + m_Edges * 2) * 2; int index5 = index4 + 1;
 			int index6 = (e + m_Edges * 3) * 2; int index7 = index6 + 1;
 			int index8 = e + m_Edges * 8;
-			//normals
+			
 			normals[index0] = normals[index2] = (vertices[index0] + vertices[index0 == 0 ? m_Edges * 2 - 1 : index0 - 1]) / 2;
 			normals[index4] = normals[index6] = ((vertices[index4] + vertices[index4 == m_Edges * 2 ? m_Edges * 4 - 1 : index4 - 1]) / 2
-				+ Vector3.up * (m_Height + m_Rise)) / 2 - Vector3.up * m_Height;
+				+ Vector3.up * (cliffHeight + m_CoverHeight)) / 2 - Vector3.up * cliffHeight;
 			normals[index1] = normals[index3] = (vertices[index1] + vertices[index1 == m_Edges * 2 - 1 ? 0 : index1 + 1]) / 2;
 			normals[index5] = normals[index7] = ((vertices[index5] + vertices[index5 == m_Edges * 4 - 1 ? m_Edges * 2 : index5 + 1]) / 2
-				+ Vector3.up * (m_Height + m_Rise)) / 2 - Vector3.up * m_Height;
+				+ Vector3.up * (cliffHeight + m_CoverHeight)) / 2 - Vector3.up * cliffHeight;
 			normals[index8] = Vector3.up;
 		}
 
-		vertices[vertices.Length - 1] = Vector3.up * (m_Height + 0.5f * m_Rise);
+		vertices[vertices.Length - 1] = Vector3.up * (cliffHeight + TerrainConst.Prism_Radius * m_CoverHeight);
 		normals[vertices.Length - 1] = Vector3.up;
-		uvs[vertices.Length - 1] = Vector2.one * 0.5f;
+		uvs[vertices.Length - 1] = Vector2.one * TerrainConst.Prism_Radius;
 
 		mesh.vertices = vertices;
+		
 		mesh.uv = uvs;
 		mesh.normals = normals;
 	}
 
 	private void UpdateTriangles()
 	{
-		int[] trianglesBarrel = new int[m_Edges * 2 * 3];
+		int[] trianglesCliff = new int[m_Edges * 2 * 3];
 		int[] trianglesCover = new int[m_Edges * 3 * 3];
 
 		int index = 0;
 		for (int ti = 0; ti < m_Edges; ti++)
 		{
 			int startIndex = ti * 2 + 1;
-			trianglesBarrel[index++] = startIndex;//1
-			trianglesBarrel[index++] = startIndex + m_Edges * 2;//2
+			trianglesCliff[index++] = startIndex;//1
+			trianglesCliff[index++] = startIndex + m_Edges * 2;//2
 
 			if (ti == m_Edges - 1)//3
 			{
-				trianglesBarrel[index++] = m_Edges * 2;
+				trianglesCliff[index++] = m_Edges * 2;
 			}
 			else
 			{
-				trianglesBarrel[index++] = startIndex + m_Edges * 2 + 1;
+				trianglesCliff[index++] = startIndex + m_Edges * 2 + 1;
 			}
 
-			trianglesBarrel[index++] = startIndex;//4
+			trianglesCliff[index++] = startIndex;//4
 
 			if (ti == m_Edges - 1)//5
 			{
-				trianglesBarrel[index++] = m_Edges * 2;
+				trianglesCliff[index++] = m_Edges * 2;
 			}
 			else
 			{
-				trianglesBarrel[index++] = startIndex + m_Edges * 2 + 1;
+				trianglesCliff[index++] = startIndex + m_Edges * 2 + 1;
 			}
 
 			if (ti == m_Edges - 1)//6
 			{
-				trianglesBarrel[index++] = 0;
+				trianglesCliff[index++] = 0;
 			}
 			else
 			{
-				trianglesBarrel[index++] = startIndex + 1;
+				trianglesCliff[index++] = startIndex + 1;
 			}
 		}
 
-		for (int ti = 0; ti < trianglesBarrel.Length; ti++)
+		for (int ti = 0; ti < trianglesCliff.Length; ti++)
 		{
-			trianglesCover[ti] = trianglesBarrel[ti] + m_Edges * 4;
+			trianglesCover[ti] = trianglesCliff[ti] + m_Edges * 4;
 		}
 
 		for (int ti = 0; ti < m_Edges; ti++)
 		{
-			trianglesCover[trianglesBarrel.Length + ti * 3 + 0] = m_Edges * 8 + ti;
-			trianglesCover[trianglesBarrel.Length + ti * 3 + 1] = m_Edges * 9 - 1;
-			if (trianglesBarrel.Length + ti * 3 + 2 == trianglesCover.Length - 1)
+			trianglesCover[trianglesCliff.Length + ti * 3 + 0] = m_Edges * 8 + ti;
+			trianglesCover[trianglesCliff.Length + ti * 3 + 1] = m_Edges * 9 - 1;
+			if (trianglesCliff.Length + ti * 3 + 2 == trianglesCover.Length - 1)
 			{
-				trianglesCover[trianglesBarrel.Length + ti * 3 + 2] = m_Edges * 8;
+				trianglesCover[trianglesCliff.Length + ti * 3 + 2] = m_Edges * 8;
 			}
 			else
 			{
-				trianglesCover[trianglesBarrel.Length + ti * 3 + 2] = m_Edges * 8 + ti + 1;
+				trianglesCover[trianglesCliff.Length + ti * 3 + 2] = m_Edges * 8 + ti + 1;
 			}
 		}
 
 		mesh.subMeshCount = 2;
-		mesh.SetTriangles(trianglesBarrel, 0);
+		mesh.SetTriangles(trianglesCliff, 0);
 		mesh.SetTriangles(trianglesCover, 1);
 	}
 }
