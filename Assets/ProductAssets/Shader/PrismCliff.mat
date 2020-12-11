@@ -71,7 +71,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _UnitHeight: 2
+    - _UnitHeight: 1.25
     - _ZWrite: 1
     m_Colors:
     - _BGColor: {r: 1, g: 0.90851146, b: 0.7311321, a: 1}
