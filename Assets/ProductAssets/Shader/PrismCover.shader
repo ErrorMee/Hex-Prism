@@ -39,7 +39,7 @@
             half _Glossiness;
             half _Metallic;
             fixed4 _Color;
-
+            
             // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
             // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
             // #pragma instancing_options assumeuniformscaling
@@ -50,10 +50,13 @@
 
             fixed4 GetCoverColor(Input IN)
             {
-                //fixed uvl = tex2D(_MainTex, IN.uv_MainTex.xy);
-                //fixed4 coverColor = fixed4(uvl, uvl, uvl, 1.0);
-                fixed4 coverColor = tex2D(_MainTex, IN.uv_MainTex.xy);
-                return coverColor;
+                if (IN.worldNormal.y > 0.9)
+                {
+                    //return lerp(_BGColor * tex2D(_MainTex, IN.uv_MainTex), GetColorful(IN), 0.2);
+                    return lerp(_BGColor, GetColorful(IN), 0.2);
+                }
+
+                return GetColorful(IN);
             }
             
             void surf(Input IN, inout SurfaceOutputStandard o)

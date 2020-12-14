@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: PrismCover
-  m_Shader: {fileID: 4800000, guid: 64c4678afc574674d850a88d820f7deb, type: 3}
+  m_Shader: {fileID: 4800000, guid: b1cccba298faa824798ff76335abd3ee, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -40,8 +40,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
+        m_Scale: {x: 4, y: 4}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
@@ -74,7 +74,7 @@ Material:
     - _UnitHeight: 1.25
     - _ZWrite: 1
     m_Colors:
-    - _BGColor: {r: 1, g: 0.90851146, b: 0.7311321, a: 1}
+    - _BGColor: {r: 0.19592543, g: 0.8584906, b: 0.13363297, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _HeightColor0: {r: 0.63529414, g: 0.73333335, b: 0.3529412, a: 1}
